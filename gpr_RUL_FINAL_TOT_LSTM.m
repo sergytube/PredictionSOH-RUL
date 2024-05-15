@@ -34,8 +34,42 @@ X_train_RUL_B5 = [predictions_SOH_B6(index_positive_RUL_train_B5), cycles_B6(ind
 y_train_RUL_B5 = [data_B6.B6.RUL(index_positive_RUL_train_B5); data_B7.B7.RUL(index_positive_RUL_train_B5); data_B18.B18.RUL(index_positive_RUL_train_B5)];
 
 
-% Addestra il modello GPR
-gprMdl_RUL_B5 = fitlm(X_train_RUL_B5, y_train_RUL_B5);
+% Definizione dell'architettura della LSTM
+numUnits = 100; % Numero di unità LSTM
+numLayers = 77; % Numero di strati LSTM
+
+layers = [
+    sequenceInputLayer(size(X_train_RUL_B5, 2)) % InputLayer
+];
+
+for i = 1:numLayers
+    layers = [
+        layers
+        lstmLayer(numUnits, 'OutputMode', 'sequence') % LSTM Layer
+        dropoutLayer(0.2) % Dropout Layer
+    ];
+end
+
+layers = [
+    layers
+    fullyConnectedLayer(1) % Fully Connected Layer
+    regressionLayer % Regression Layer
+];
+
+% Opzioni di addestramento
+options = trainingOptions('adam', ...
+    'MaxEpochs', 150, ...
+    'MiniBatchSize', 64, ...
+    'Shuffle', 'every-epoch', ...
+    'Verbose', 1, ...
+    'Plots', 'training-progress');
+X_train_RUL_B5_transposed = transpose(X_train_RUL_B5);
+y_train_RUL_B5_transposed = transpose(y_train_RUL_B5);
+
+
+% Addestramento della LSTM
+gprMdl_RUL_B5 = trainNetwork(X_train_RUL_B5_transposed, y_train_RUL_B5_transposed, layers, options);
+
 
 % Utilizza le previsioni della SOH e i numeri di ciclo come feature per la previsione del RUL su B18
 index_positive_RUL_test_B5 = data_B5.B5.RUL > 0;
@@ -43,9 +77,11 @@ X_test_B5 = [predictions_SOH_B5(index_positive_RUL_test_B5), cycles_B5(index_pos
 y_test_B5 = data_B5.B5.RUL(index_positive_RUL_test_B5);
 
 %% VALUTAZIONE DEL MODELLO SU B5
+X_test_B5_transposed = transpose(X_test_B5);
 
 % Effettua previsioni del RUL su B18 utilizzando le previsioni della SOH come feature
-predictions_RUL_B5_with_predicted_SOH = predict(gprMdl_RUL_B5, X_test_B5);
+predictions_RUL_B5_with_predicted_SOH = predict(gprMdl_RUL_B5, X_test_B5_transposed);
+y_test_B5_transpose = transpose(y_test_B5);
 
 % Calcolo dell'errore per la batteria B5
 mseError_B5_with_predicted_SOH = mean((predictions_RUL_B5_with_predicted_SOH - y_test_B5).^2);
@@ -60,15 +96,19 @@ mae_B5 = mean(abs(predictions_RUL_B5_with_predicted_SOH - y_test_B5));
 disp(['MAE for Battery B5: ', num2str(mae_B5)]);
 
 index_SOH_below_threshold_B5 = find(predictions_SOH_B5 < 80, 1, 'first')-2;
-mseError_B5_with_predicted_SOH_Until_80 = mean((predictions_RUL_B5_with_predicted_SOH(1:index_SOH_below_threshold_B5, :) - y_test_B5(1:index_SOH_below_threshold_B5, :)).^2);
-rmseError_B5_with_predicted_SOH_Until_80 = sqrt(mseError_B5_with_predicted_SOH_Until_80);
-maeError_B5_with_predicted_SOH_Until_80 = mean(abs((predictions_RUL_B5_with_predicted_SOH(1:index_SOH_below_threshold_B5, :) - y_test_B5(1:index_SOH_below_threshold_B5, :))));
-
-disp(['Il punto in cui la SOH è inferiore al 80% per la batteria B5 è al ciclo numero: ', num2str(index_SOH_below_threshold_B5)]);
-disp(['La MSE della batteria fino a quel punto è: ', num2str(mseError_B5_with_predicted_SOH_Until_80)]);
-disp(['La RMSE della batteria fino a quel punto è: ', num2str(rmseError_B5_with_predicted_SOH_Until_80)]);
-disp(['La MAE della batteria fino a quel punto è: ', num2str(maeError_B5_with_predicted_SOH_Until_80)]);
-
+if index_SOH_below_threshold_B5 <= length(predictions_RUL_B5_with_predicted_SOH)
+    % Calcola l'errore
+    % mseError_B5_with_predicted_SOH_Until_80 = mean((predictions_RUL_B5_with_predicted_SOH(1:index_SOH_below_threshold_B5, :) - y_test_B5(1:index_SOH_below_threshold_B5, :)).^2);
+    % rmseError_B5_with_predicted_SOH_Until_80 = sqrt(mseError_B5_with_predicted_SOH_Until_80);
+    % maeError_B5_with_predicted_SOH_Until_80 = mean(abs((predictions_RUL_B5_with_predicted_SOH(1:index_SOH_below_threshold_B5, :) - y_test_B5(1:index_SOH_below_threshold_B5, :))));
+    % 
+    % disp(['Il punto in cui la SOH è inferiore al 80% per la batteria B5 è al ciclo numero: ', num2str(index_SOH_below_threshold_B5)]);
+    % disp(['La MSE della batteria fino a quel punto è: ', num2str(mseError_B5_with_predicted_SOH_Until_80)]);
+    % disp(['La RMSE della batteria fino a quel punto è: ', num2str(rmseError_B5_with_predicted_SOH_Until_80)]);
+    % disp(['La MAE della batteria fino a quel punto è: ', num2str(maeError_B5_with_predicted_SOH_Until_80)]);
+else
+    disp('index_SOH_below_threshold_B5 supera la lunghezza dell''array predictions_RUL_B5_with_predicted_SOH');
+end
 
 
 % % Plot delle previsioni del RUL rispetto ai valori reali per la batteria B5
@@ -208,7 +248,7 @@ disp(['RMSE for Battery B7: ', num2str(rmse_B7)]);
 mae_B7 = mean(abs(predictions_RUL_B7_with_predicted_SOH - y_test_B7));
 disp(['MAE for Battery B7: ', num2str(mae_B7)]);
 
-index_SOH_below_threshold_B7 = find(data_B7.B7.SOH < 80, 1, 'first');
+index_SOH_below_threshold_B7 = find(predictions_SOH_B7 < 80, 1, 'first');
 mseError_B7_with_predicted_SOH_Until_80 = mean((predictions_RUL_B7_with_predicted_SOH(1:index_SOH_below_threshold_B7, :) - y_test_B7(1:index_SOH_below_threshold_B7, :)).^2);
 rmseError_B7_with_predicted_SOH_Until_80 = sqrt(mseError_B7_with_predicted_SOH_Until_80);
 maeError_B7_with_predicted_SOH_Until_80 = mean(abs((predictions_RUL_B7_with_predicted_SOH(1:index_SOH_below_threshold_B7, :) - y_test_B7(1:index_SOH_below_threshold_B7, :))));
@@ -263,7 +303,7 @@ disp(['RMSE for Battery B18: ', num2str(rmse_B18)]);
 mae_B18 = mean(abs(predictions_RUL_B18_with_predicted_SOH - y_test_B18));
 disp(['MAE for Battery B18: ', num2str(mae_B18)]);
 
-index_SOH_below_threshold_B18 = find(data_B18.B18.SOH < 80, 1, 'first');
+index_SOH_below_threshold_B18 = find(predictions_SOH_B18 < 80, 1, 'first');
 mseError_B18_with_predicted_SOH_Until_80 = mean((predictions_RUL_B18_with_predicted_SOH(1:index_SOH_below_threshold_B18, :) - y_test_B18(1:index_SOH_below_threshold_B18, :)).^2);
 rmseError_B18_with_predicted_SOH_Until_80 = sqrt(mseError_B18_with_predicted_SOH_Until_80);
 maeError_B18_with_predicted_SOH_Until_80 = mean(abs((predictions_RUL_B18_with_predicted_SOH(1:index_SOH_below_threshold_B18, :) - y_test_B18(1:index_SOH_below_threshold_B18, :))));
@@ -291,27 +331,11 @@ mseErrors_RUL = [mseError_B5_with_predicted_SOH, mseError_B6_with_predicted_SOH,
 rmseErrors_RUL = [rmse_B5, rmse_B6, rmse_B7, rmse_B18];
 maeErrors_RUL = [mae_B5, mae_B6, mae_B7, mae_B18];
 
-% Calcola la media di ciascun errore
-avg_mseError_RUL = mean(mseErrors_RUL);
-avg_rmseError_RUL = mean(rmseErrors_RUL);
-avg_maeError_RUL = mean(maeErrors_RUL);
-
-% Mostra i risultati
-disp(['Media MSE Error: ', num2str(avg_mseError_RUL)]);
-disp(['Media RMSE Error: ', num2str(avg_rmseError_RUL)]);
-disp(['Media MAE Error: ', num2str(avg_maeError_RUL)]);
-
 % Creazione del grafico
 figure;
 bar([mseErrors_RUL', rmseErrors_RUL', maeErrors_RUL']);
-hold on;
-% Aggiungi le linee per le medie degli errori MSE, RMSE e MAE
-plot([1, 2, 3, 4], [avg_mseError_RUL, avg_mseError_RUL, avg_mseError_RUL, avg_mseError_RUL], 'LineWidth', 2, 'Color', 'r');
-plot([1, 2, 3, 4], [avg_rmseError_RUL, avg_rmseError_RUL, avg_rmseError_RUL, avg_rmseError_RUL], 'LineWidth', 2, 'Color', 'g');
-plot([1, 2, 3, 4], [avg_maeError_RUL, avg_maeError_RUL, avg_maeError_RUL, avg_maeError_RUL], 'LineWidth', 2, 'Color', 'b');
-hold off;
 xlabel('Batteria');
 ylabel('Errore');
 title('Errori MSE, RMSE e MAE per la predizione della RUL');
-legend('MSE', 'RMSE', 'MAE', 'Media MSE', 'Media RMSE', 'Media MAE');
+legend('MSE', 'RMSE', 'MAE');
 xticklabels({'B5', 'B6', 'B7', 'B18'});
