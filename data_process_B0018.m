@@ -189,46 +189,7 @@ for i = 1:numCicli
     end
 end
 
-%% Calcolo RUL
-%{
-TIME = 0;
-for j = 1:length(dataset.FAULT_CODE)
-    % Calcola il tempo totale di ciclo
-    TIME = TIME + dataset.TIME_CYCLE(j);
-    
-    % Calcola RUL in base al valore del codice di errore
-    if dataset.FAULT_CODE(j) == 1
-        RUL = TIME - dataset.TIME_CYCLE(j);
-    else
-        if j == 1
-            RUL = TIME;
-        else
-            RUL = dataset.RUL(j-1) - dataset.TIME_CYCLE(j);
-        end
-    end
-    
-    % Assegna RUL al dataset
-    dataset.RUL(j) = RUL;
-end
-%}
-TIME = 0;
-n = length(dataset.FAULT_CODE);
-total_time = sum(dataset.TIME_CYCLE);
 
-for j = 1:n
-    % Calcola RUL in base al valore del codice di errore
-    if dataset.FAULT_CODE(j) == 1
-        RUL = total_time - TIME;
-    else
-        RUL = total_time - TIME - dataset.TIME_CYCLE(j);
-    end
-    
-    % Assegna RUL al dataset
-    dataset.RUL(j) = RUL;
-    
-    % Aggiorna il tempo totale trascorso
-    TIME = TIME + dataset.TIME_CYCLE(j);
-end
 %% CALCOLO PER TOTAL_TIME 
 
 for i = 1 : numCicli
@@ -252,6 +213,16 @@ for i = 1 : height(dataset)
     dataset.Num_cycle(i) = i;
 end
 
+%% Calcolo RUL
+CycleGood = 61;
+for j = 1:CycleGood
+    dataset.RUL(j) = CycleGood;
+    CycleGood = CycleGood - 1;
+end
+
+CycleBad = 62;
+% Imposta a zero solo gli elementi successivi a CycleBad
+dataset.RUL(CycleBad:end) = 0;
 
 
 %% Salvataggio dataset 
@@ -261,9 +232,6 @@ end
 B18 = dataset;
 
 save ("B18_finito.mat","B18");
-
-clear all;
-close all;
 
 
 
