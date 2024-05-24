@@ -30,8 +30,11 @@ Questo repository contiene i programmi necessari per l'analisi dei dati delle ba
 3. **features_correlation_B18:** Calcola la correlazione tra le caratteristiche estratte per identificare quelle piÃ¹ significative.
 4. **gpr_B18_FINAL:** Addestra e valuta il modello GPR per la stima della SOH (State of Health) della batteria B18.
 
-## Batterie Finali
+## Nuovo aggiornamento
+Una volta fatto il processing e l'extraciton per ogni batteria, sarà possibile predirre la SOH per tutte le batterie in un unico file chiamato **gpr_SOH_FINAL_TOT**, in modo da avere anche la media delle medie, e poter modificare la soglia di testing delle batterie in modo più comprensibile ed uniforme.
+In ogni caso da questo punto, si passa alla fase finale, la predizione della RUL
 
+## RUL Prediction
 1. **gpr_BATTERIES_FINAL_RUL:** Combina i risultati dei modelli GPR (cioÃ¨ della predizione della SOH) per ottenere una stima finale della RUL per tutte le batterie, quindi prevedere tutta la durata in ore delle batterie.
 
 Assicurarsi di eseguire i programmi nell'ordine specificato per ottenere i risultati corretti.
