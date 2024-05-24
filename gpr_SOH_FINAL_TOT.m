@@ -1,4 +1,8 @@
 %% PREDIZIONE SOH A PARTIRE DA QUESTE FEATURES 'HI1','HI2','HI3'--- MSE Error: 4.2942
+% 25% del dataset
+% MSE Error: 4.2942
+% RMSE Error: 2.0722
+% MAE Error: 1.5374
 
 %% Caricamento  dei dataset
 data_B5 = load('B5_features.mat');
@@ -22,7 +26,7 @@ X_test_MSE_B5 = data_B5.features(25:end,:);
 y_test_B5 = data_B5.B5.SOH(25:end,:); 
 
 y_test_tot_B5 = data_B5.B5.SOH(1:170,:);
-y_test_tot1_B5 = data_B5.B5.SOH(1:24,:);
+y_test_tot1_B5 = data_B5.B5.SOH(1:25,:);
 
 gprMdl_B5 = fitrgp(X_train_B5, y_train_B5, 'Basis', 'linear', 'FitMethod', 'exact', 'PredictMethod', 'exact');
 
@@ -76,25 +80,25 @@ else
 end
 
 % Calcolo dell'errore
-mseError_B5 = mean((predictions_MSE_B5 - y_test_B5).^2);
+mseError_B5 = mean((predictions_MSE_B5(25:134) - y_test_B5(25:134)).^2);
 disp(['MSE Error: ', num2str(mseError_B5)]);
 rmseError_B5 = sqrt(mseError_B5);
 disp(['RMSE Error: ', num2str(rmseError_B5)]);
-maeError_B5 = mean(abs(predictions_MSE_B5 - y_test_B5));
+maeError_B5 = mean(abs(predictions_MSE_B5(1:134) - y_test_B5(1:134)));
 disp(['MAE Error: ', num2str(maeError_B5)]);
 
 
 %% Plot dei risultati
 figure;
-plot(25:170, y_test_B5, 're-', 'LineWidth', 1.5); % Dati reali
+plot(25:134, y_test_B5(25:134), 're-', 'LineWidth', 1.5); % Dati reali
 hold on;
-plot(25:170, predictions_MSE_B5, 'bl-', 'LineWidth', 1.5); % Predizioni
+plot(25:134, predictions_MSE_B5(25:134), 'bl-', 'LineWidth', 1.5); % Predizioni
 hold on;
-plot(1:24, y_test_tot1_B5, 're-', 'LineWidth', 1.5); % Predizioni
+plot(1:25, y_test_tot1_B5, 're-', 'LineWidth', 1.5); % Predizioni
 hold on;
 
 % Linea verticale per separare l'indice 24 dal 25
-line([24.5 24.5], [min([y_test_B5; predictions_MSE_B5]), max([y_test_B5; predictions_MSE_B5])], 'Color', 'g', 'LineStyle', '--', 'LineWidth', 2);
+line([25.5 25.5], [min([y_test_B5; predictions_MSE_B5]), max([y_test_B5; predictions_MSE_B5])], 'Color', 'g', 'LineStyle', '--', 'LineWidth', 2);
 
 legend('Real SOH', 'Predicted SOH', 'Real SOH totale');
 
@@ -122,7 +126,7 @@ X_test_MSE_B6 = data_B6.features(25:end,:);
 y_test_B6 = data_B6.B6.SOH(25:end,:); 
 
 y_test_tot_B6 = data_B6.B6.SOH(1:170,:);
-y_test_tot1_B6 = data_B6.B6.SOH(1:24,:);
+y_test_tot1_B6 = data_B6.B6.SOH(1:25,:);
 
 gprMdl_B6 = fitrgp(X_train_B6, y_train_B6, 'Basis', 'linear', 'FitMethod', 'exact', 'PredictMethod', 'exact');
 
@@ -176,21 +180,21 @@ else
 end
 
 % Calcolo dell'errore
-mseError_B6 = mean((predictions_MSE_B6 - y_test_B6).^2);
+mseError_B6 = mean((predictions_MSE_B6(25:134) - y_test_B6(25:134)).^2);
 disp(['MSE Error: ', num2str(mseError_B6)]);
 rmseError_B6 = sqrt(mseError_B6);
 disp(['RMSE Error: ', num2str(rmseError_B6)]);
-maeError_B6 = mean(abs(predictions_MSE_B6 - y_test_B6));
+maeError_B6 = mean(abs(predictions_MSE_B6(25:134) - y_test_B6(25:134)));
 disp(['MAE Error: ', num2str(maeError_B6)]);
 
 
 %% Plot dei risultati
 figure;
-plot(25:170, y_test_B6, 're-', 'LineWidth', 1.5); % Dati reali
+plot(25:134, y_test_B6(25:134), 're-', 'LineWidth', 1.5); % Dati reali
 hold on;
-plot(25:170, predictions_MSE_B6, 'bl-', 'LineWidth', 1.5); % Predizioni
+plot(25:134, predictions_MSE_B6(25:134), 'bl-', 'LineWidth', 1.5); % Predizioni
 hold on;
-plot(1:24, y_test_tot1_B6, 're-', 'LineWidth', 1.5); % Predizioni
+plot(1:25, y_test_tot1_B6, 're-', 'LineWidth', 1.5); % Predizioni
 hold on;
 
 % Linea verticale per separare l'indice 24 dal 25
@@ -224,7 +228,7 @@ X_test_MSE_B7 = data_B7.features(25:end,:);
 y_test_B7 = data_B7.B7.SOH(25:end,:); 
 
 y_test_tot_B7 = data_B7.B7.SOH(1:170,:);
-y_test_tot1_B7 = data_B7.B7.SOH(1:24,:);
+y_test_tot1_B7 = data_B7.B7.SOH(1:25,:);
 
 gprMdl_B7 = fitrgp(X_train_B7, y_train_B7, 'Basis', 'linear', 'FitMethod', 'exact', 'PredictMethod', 'exact');
 
@@ -278,21 +282,21 @@ else
 end
 
 % Calcolo dell'errore
-mseError_B7 = mean((predictions_MSE_B7 - y_test_B7).^2);
+mseError_B7 = mean((predictions_MSE_B7(25:134) - y_test_B7(25:134)).^2);
 disp(['MSE Error: ', num2str(mseError_B7)]);
 rmseError_B7 = sqrt(mseError_B7);
 disp(['RMSE Error: ', num2str(rmseError_B7)]);
-maeError_B7 = mean(abs(predictions_MSE_B7 - y_test_B7));
+maeError_B7 = mean(abs(predictions_MSE_B7(25:134) - y_test_B7(25:134)));
 disp(['MAE Error: ', num2str(maeError_B7)]);
 
 
 %% Plot dei risultati
 figure;
-plot(25:170, y_test_B7, 're-', 'LineWidth', 1.5); % Dati reali
+plot(25:134, y_test_B7(25:134), 're-', 'LineWidth', 1.5); % Dati reali
 hold on;
-plot(25:170, predictions_MSE_B7, 'bl-', 'LineWidth', 1.5); % Predizioni
+plot(25:134, predictions_MSE_B7(25:134), 'bl-', 'LineWidth', 1.5); % Predizioni
 hold on;
-plot(1:24, y_test_tot1_B7, 're-', 'LineWidth', 1.5); % Predizioni
+plot(1:25, y_test_tot1_B7, 're-', 'LineWidth', 1.5); % Predizioni
 hold on;
 
 % Linea verticale per separare l'indice 24 dal 25
@@ -325,7 +329,7 @@ X_test_MSE_B18 = data_B18.features(25:end,:);
 y_test_B18 = data_B18.B18.SOH(25:end,:); 
 
 y_test_tot_B18 = data_B18.B18.SOH(1:134,:);
-y_test_tot1_B18 = data_B18.B18.SOH(1:24,:);
+y_test_tot1_B18 = data_B18.B18.SOH(1:25,:);
 
 gprMdl_B18 = fitrgp(X_train_B18, y_train_B18, 'Basis', 'linear', 'FitMethod', 'exact', 'PredictMethod', 'exact');
 
@@ -393,7 +397,7 @@ plot(25:134, y_test_B18, 're-', 'LineWidth', 1.5); % Dati reali
 hold on;
 plot(25:134, predictions_MSE_B18, 'bl-', 'LineWidth', 1.5); % Predizioni
 hold on;
-plot(1:24, y_test_tot1_B18, 're-', 'LineWidth', 1.5); % Predizioni
+plot(1:25, y_test_tot1_B18, 're-', 'LineWidth', 1.5); % Predizioni
 hold on;
 
 % Linea verticale per separare l'indice 24 dal 25
